@@ -5,7 +5,7 @@ class Leaderboard < ActiveRecord::Base
   # This module is not really required, but can be helpful when
   # using the script/console and needing to print hash structures.
   require 'pp'
-
+  attr_accessible
   # This method gets all the assignments associated with a courses
   # in an array. A course_id of 0 will get assignments not affiliated
   # with a specific course.

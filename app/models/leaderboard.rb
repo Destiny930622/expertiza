@@ -11,30 +11,30 @@ class Leaderboard < ActiveRecord::Base
   # with a specific course.
 
   ### This methodreturns unaffiliiated assignments - assignments not affiliated to any course
-  def self.getIndependantAssignments(user_id)
+  def self.get_independant_assignments(user_id)
     assignmentIds = AssignmentParticipant.where(user_id: user_id).pluck(:parent_id)
     noCourseAssignments = Assignment.where(id: assignmentIds, course_id: nil)
   end
 
-  def self.getAssignmentsInCourses(courseArray)
+  def self.get_assignments_in_courses(courseArray)
     assignmentList = Assignment.where(course_id: courseArray)
   end
 
   # This method gets all tuples in the Participants table associated
   # hierarchy (qtype => course => user => score)
 
-  def self.getParticipantEntriesInCourses(courseArray, user_id)
+  def self.get_participant_entries_in_courses(courseArray, user_id)
     assignmentList = []
-    assignmentList = getAssignmentsInCourses(courseArray)
-    independantAssignments = getIndependantAssignments(user_id)
+    assignmentList = get_assignments_in_courses(courseArray)
+    independantAssignments = get_independant_assignments(user_id)
     assignmentList.concat(independantAssignments)
 
-    questionnaireHash = getParticipantsScore(assignmentList)
+    questionnaireHash = get_participants_score(assignmentList)
   end
 
   # This method gets all tuples in the Participants table associated
   # hierarchy (qtype => course => user => score).
-  def self.getParticipantEntriesInAssignment(assignmentID)
+  def self.get_participant_entries_in_assignment(assignmentID)
     assignmentList = []
     assignmentList << Assignment.find(assignmentID)
     questionnaireHash = getParticipantEntriesInAssignmentList(assignmentList)
@@ -42,7 +42,7 @@ class Leaderboard < ActiveRecord::Base
 
   # This method returns the participants score grouped by course, grouped by questionnaire type.
   # End result is a hash (qType => (course => (user => score)))
-  def self.getParticipantsScore(assignmentList)
+  def self.get_participants_score(assignmentList)
     qTypeHash = {}
     questionnaireResponseTypeHash = {"ReviewResponseMap" => "ReviewQuestionnaire",
                                      "MetareviewResponseMap" => "MetareviewQuestionnaire",
@@ -59,7 +59,7 @@ class Leaderboard < ActiveRecord::Base
     # Get mapping of participant and team with corresponding assignment.
     # "participant" => {participantId => {"self" => <ParticipantRecord>, "assignment" => <AssignmentRecord>}}
     # "team" => {teamId => <AssignmentRecord>}
-    assignmentMap = getAssignmentMapping(assignmentList, participantList, teamList)
+    assignmentMap = get_assignment_mapping(assignmentList, participantList, teamList)
 
     # Aggregate total reviewee list
     revieweeList = []
@@ -84,7 +84,7 @@ class Leaderboard < ActiveRecord::Base
 
       questionnaireType = questionnaireResponseTypeHash[scoreEntry.object_type]
 
-      addScoreToResultantHash(qTypeHash, questionnaireType, courseId, revieweeUserIdList, scoreEntry.score)
+      add_score_to_result_ant_hash(qTypeHash, questionnaireType, courseId, revieweeUserIdList, scoreEntry.score)
     end
 
     qTypeHash
@@ -92,7 +92,7 @@ class Leaderboard < ActiveRecord::Base
 
   # This method adds score to all the revieweeUser in qTypeHash.
   # Later, qTypeHash will contain the final computer leaderboard.
-  def self.addScoreToResultantHash(qTypeHash, questionnaireType, courseId, revieweeUserIdList, scoreEntryScore)
+  def self.add_score_to_result_ant_hash(qTypeHash, questionnaireType, courseId, revieweeUserIdList, scoreEntryScore)
     if revieweeUserIdList
       # Loop over all the revieweeUserId.
       for revieweeUserId in revieweeUserIdList
@@ -126,7 +126,7 @@ class Leaderboard < ActiveRecord::Base
   # This method creates a mapping of participant and team with corresponding assignment.
   # "participant" => {participantId => {"self" => <ParticipantRecord>, "assignment" => <AssignmentRecord>}}
   # "team" => {teamId => <AssignmentRecord>}
-  def self.getAssignmentMapping(assignmentList, participantList, teamList)
+  def self.get_assignment_mapping(assignmentList, participantList, teamList)
     resultHash = {"participant" => {}, "team" => {}}
     assignmentHash = {}
     # Hash all the assignments for later fetching them by assignment.id
@@ -149,7 +149,7 @@ class Leaderboard < ActiveRecord::Base
 
   # This method does a destructive sort on the computed scores hash so
   # that it can be mined for personal achievement information
-  def self.sortHash(qTypeHash)
+  def self.sort_hash(qTypeHash)
     result = {}
     # Deep-copy of Hash
     result = Marshal.load(Marshal.dump(qTypeHash))
@@ -165,7 +165,7 @@ class Leaderboard < ActiveRecord::Base
 
   # This method takes the sorted computed score hash structure and mines
   # it for personal achievement information.
-  def self.extractPersonalAchievements(csHash, courseIdList, userId)
+  def self.extract_personal_achievements(csHash, courseIdList, userId)
     # Get all the possible accomplishments from Leaderboard table
     leaderboardRecords = Leaderboard.all
     courseAccomplishmentHash = {}
@@ -176,7 +176,7 @@ class Leaderboard < ActiveRecord::Base
       accomplishmentMap[leaderboardRecord.qtype] = leaderboardRecord.name
     end
 
-    csSortedHash = Leaderboard.sortHash(csHash)
+    csSortedHash = Leaderboard.sort_hash(csHash)
 
     for courseId in courseIdList
       for accomplishment in accomplishmentMap.keys
@@ -199,7 +199,7 @@ class Leaderboard < ActiveRecord::Base
   end
 
   # Returns string for Top N Leaderboard Heading or accomplishments entry
-  def self.leaderboardHeading(qtypeid)
+  def self.leaderboard_heading(qtypeid)
     ltEntry = Leaderboard.find_by_qtype(qtypeid)
     if ltEntry
       ltEntry.name

@@ -17,14 +17,14 @@ class LeaderboardController < ApplicationController
                       LeaderboardHelper.studentInWhichCourses(current_user.id)
                     end
 
-      @csHash = Leaderboard.getParticipantEntriesInCourses @courseList, current_user.id
+      @csHash = Leaderboard.get_participant_entries_in_courses @courseList, current_user.id
 
       unless @instructorQuery
         @user = current_user
-        @courseAccomp = Leaderboard.extractPersonalAchievements(@csHash, @courseList, current_user.id)
+        @courseAccomp = Leaderboard.extract_personal_achievements(@csHash, @courseList, current_user.id)
       end
 
-      @csHash = Leaderboard.sortHash(@csHash)
+      @csHash = Leaderboard.sort_hash(@csHash)
       # Setup leaderboard for easier consumption by view
       @leaderboards = []
 
